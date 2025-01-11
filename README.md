@@ -4,6 +4,7 @@ Una aplicación web que permite a los usuarios gestionar productos y listas de c
 
 Versión 0.2 :
 
+Aplicando el framework Vue.js en el proyecto.
 Conexión Frontend-Backend.
 Creación de la base de datos.
 Creación del Froontend inicial y la visualización de los datos.
