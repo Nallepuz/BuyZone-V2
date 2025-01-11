@@ -1,0 +1,120 @@
+<template>
+<div id="app">
+  <header class="p-3 text-bg">
+    <div class="container">
+      <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+        <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
+          <img class="logo-desktop"
+            src="data:image/png;base64,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">
+        </a>
+
+        <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+          <li style="margin-left: 50px;"><a href="#" class="nav-link px-2 text-secondary">Products</a></li>
+          <li><a href="#" class="nav-link px-2 text-white">Your Lists</a></li>
+          <li><a href="#" class="nav-link px-2 text-white">FAQs</a></li>
+          <li><a href="#" class="nav-link px-2 text-white">About</a></li>
+        </ul>
+
+        <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
+          <input type="search" class="form-control form-control-dark text-bg-dark" placeholder="Search..."
+            aria-label="Search">
+        </form>
+
+        <div class="text-end">
+          <button type="button" class="btn btn-outline-light me-2">Login</button>
+          <button type="button" class="btn btn-warning">Sign-up</button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="container mt-5"></div>
+  <div class="row" style="
+    margin-left: 200px;">
+    <div class="col-md-4" v-for="item in products" :key="item.name" >
+      <div class="card mb-4 shadow-sm">
+        <img :src="item.image" class="card-img-top" alt="...">
+        <div class="card-body">
+          <h5 class="card-title">{{ item.name }}</h5>
+          <p class="card-text">{{ item.price }} €</p>
+          <button type="button" class="btn btn-warning">Add to cart</button>
+          <button type="button" class="btn btn-danger" style="margin-left:40px;" >Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</template>
+
+<script>
+import axios from 'axios'; // Asegúrate de que esta línea esté presente
+
+export default {
+  name: 'App',
+  data() {
+    return {
+      products: []
+    };
+  },
+  mounted() {                              
+    this.readProducts();
+  },
+  methods: {
+    readProducts() {
+      axios.get('http://localhost:8081/products') // Cambia this.$axios por axios
+        .then((response) => {
+          this.products = response.data;
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    }
+  }
+}
+</script>
+
+<style>
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #b3b8bd;
+  background-color: #272727;
+}
+
+.text-bg {
+  background-color: #3e3f41;
+}
+
+.card {
+  width: 20rem;
+}
+
+.card-img-top {
+  width: 50%;
+  height: 250px;
+  object-fit: auto;
+}
+
+.card-body {
+  background-color: #909192;
+}
+
+.logo-desktop {
+  width: 200px;
+  /* Cambia el tamaño según tus necesidades */
+  height: auto;
+  /* Mantiene la proporción de la imagen */
+}
+
+.nav-link {
+  margin-right: 50px; /* Añade espacio entre los menús del nav */
+}
+
+element.style {
+    margin-left: 200px;
+}
+
+
+
+</style>

@@ -1,41 +1,43 @@
 const express = require('express');                                                                  // Importar express
 const cors = require('cors');                                                                        // Importar cors
+const knex = require('knex');                                                                        // Importar knex
 
 const app = express();                                                                               
 app.use(cors());                                                                                     
 app.use(express.json());                                                                             
 
 
-const products = [
-    { 
-        'name': 'Asus Zenbook',
-        'description': 'Laptop Asus Zenbook 14',
-        "price": 1119.00,
+const db = knex({    
+    client: 'sqlite3',                                                                                 
+    connection: {                                                                                     
+        filename : './products.db'
     },
-    { 
-        'name': 'HP Victus',
-        'description': 'Laptop HP Victus 16',
-        'price': 1149.00,
-    },
-    { 
-        'name': 'Lenovo Legion',
-        'description': 'Laptop Lenovo Legion 5',
-        'price': 1099.00,
-    }
-];                                                                                                  // Objeto para almacenar los productos   
+    useNullAsDefault: true
+});                                                                 
 
 
 
-app.get('/products', (req, res) => {                                                                // Ruta para obtener todos los productos
-    res.json(products);                                                                             
+app.get('/products', async (req, res) => {    
+    try {  
+        const products = await db('products').select('*');
+        res.json(products); 
+    }  catch (error) {
+        res.status(500).json({ error: 'Error al obtener los productos' });
+    }                                                                            
 });                     
 
-app.get('/products/:name', (req, res) => {                                                                // Ruta para obtener todos los productos
-    res.json(products);                                                                             // Enviar el objeto products como respuesta
-});    
+app.post('/products', (req, res) => {           
 
+});
 
+app.put('/products/:name', (req, res) => {      
+    
+});
 
-app.listen(8080, () => {                                                                            // Iniciar el servidor en el puerto 8080
-    console.log('El servidor ha iniciado en el puerto 8080');
+app.delete('/products/:name', (req, res) => {     
+
+});
+
+app.listen(8081, () => {                                                                            
+    console.log('El servidor ha iniciado en el puerto 8081');
 });
