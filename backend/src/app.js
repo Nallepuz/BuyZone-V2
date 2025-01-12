@@ -108,17 +108,81 @@ app.get('/products', async (req, res) => {
     }
 });
 
-app.post('/products', (req, res) => {
+app.post('/products', async (req, res) => {
+    const { image, name, price } = req.body;
 
+    // Validar los campos del producto
+    if (!image || !name || price == null) {
+        return res.status(400).json({ success: false, message: 'Todos los campos (imageUrl, name, price) son obligatorios.' });
+    }
+
+    if (typeof price !== 'number' || price <= 0) {
+        return res.status(400).json({ success: false, message: 'El precio debe ser un número positivo.' });
+    }
+
+    try {
+        // Verificar si el producto ya existe
+        const existingProduct = await db('products').where({ name }).first();
+        if (existingProduct) {
+            return res.status(400).json({ success: false, message: 'El producto ya existe.' });
+        }
+
+        // Insertar el producto en la base de datos
+        await db('products').insert({ image, name, price });
+        res.status(201).json({ success: true, message: 'Producto agregado exitosamente.' });
+    } catch (error) {
+        console.error('Error al agregar el producto:', error.message);
+        res.status(500).json({ success: false, message: 'Error al agregar el producto.' });
+    }
 });
 
-app.put('/products/:name', (req, res) => {
+app.put('/products/:name', async (req, res) => {
+    const originalName = req.params.name; // Nombre original del producto
+    const { price } = req.body; // Solo se espera el precio como dato
 
+    if (price == null || typeof price !== 'number' || price <= 0) {
+        return res.status(400).json({ success: false, message: 'El precio debe ser un número positivo.' });
+    }
+
+    try {
+        // Verificar si el producto existe
+        const product = await db('products').where({ name: originalName }).first();
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Producto no encontrado.' });
+        }
+
+        // Actualizar solo el precio
+        await db('products').where({ name: originalName }).update({ price });
+        res.status(200).json({ success: true, message: 'Precio actualizado exitosamente.' });
+    } catch (error) {
+        console.error('Error al actualizar el precio:', error.message);
+        res.status(500).json({ success: false, message: 'Error al actualizar el precio.' });
+    }
 });
 
-app.delete('/products/:name', (req, res) => {
 
+
+
+app.delete('/products/:name', async (req, res) => {         // Endpoint para eliminar un producto por su nombre
+    const { name } = req.params;
+
+    try {
+        // Verificar si el producto existe antes de intentar eliminarlo
+        const product = await db('products').where({ name }).first();
+
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Producto no encontrado.' });
+        }
+
+        // Eliminar el producto
+        await db('products').where({ name }).del();
+        res.status(200).json({ success: true, message: 'Producto eliminado exitosamente.' });
+    } catch (error) {
+        console.error('Error al eliminar el producto:', error.message);
+        res.status(500).json({ success: false, message: 'Error al eliminar el producto.' });
+    }
 });
+
 
 app.listen(8081, () => {
     console.log('El servidor ha iniciado en el puerto 8081');
