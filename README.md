@@ -17,3 +17,8 @@ Agregada la función de Acceso de Usuario.
 Agregada la función de cierre de sesión del Usuario.
 Agregada la condición de poder acceder a las funciones de los productos.
 
+Version 0.7
+
+Creada la función de poder añadir un producto nuevo.
+Creada la función para poder editar el precio de los producto ya creados.
+Creada la función para poder eliminar un prodcuto ya creado.
