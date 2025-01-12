@@ -8,3 +8,12 @@ Aplicando el framework Vue.js en el proyecto.
 Conexión Frontend-Backend.
 Creación de la base de datos.
 Creación del Froontend inicial y la visualización de los datos.
+
+Version 0.3
+
+Creación de la tabla de usuarios en la base de datos.
+Agregada la finción de registro de Usuario.
+Agregada la función de Acceso de Usuario.
+Agregada la función de cierre de sesión del Usuario.
+Agregada la condición de poder acceder a las funciones de los productos.
+
