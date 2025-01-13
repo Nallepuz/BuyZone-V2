@@ -1,28 +1,36 @@
 <template>
   <div id="app">
-    <div class="container mt-5"></div>
     <div class="row" style="margin-left: 200px;">
-      <div class="col-md-4" v-for="item in products" :key="item.name">
-        <div class="card mb-4 shadow-sm">
-          <img :src="item.image" class="card-img-top" alt="...">
-          <div class="card-body">
-            <h5 class="card-title">{{ item.name }}</h5>
-            <p class="card-text">{{ item.price }} €</p>
-            <template v-if="isLoggedIn">
-              <button type="button" class="btn btn-warning" @click="addToCart(item)"> Add to cart </button>
-              <button type="button" class="btn btn-primary" style="margin-left: 90px;"
-                @click="startEditing(item)">Edit</button>
-              <div class="espacio">
-                <button type="button" class="btn btn-danger" style="margin-left: 40px;"
-                  @click="deleteProduct(item.name)">
-                  Delete
-                </button>
-              </div>
-            </template>
+  <div class="col-md-4" v-for="item in products" :key="item.name">
+    <div class="card mb-4 shadow-sm">
+      <img :src="item.image" class="card-img-top" alt="...">
+      <div class="card-body">
+        <h5 class="card-title">{{ item.name }}</h5>
+        <p class="card-text">{{ item.price }} €</p>
+        <template v-if="isLoggedIn">
+          <button type="button" class="btn btn-warning" @click="addToCart(item)">Add to cart</button>
+          <button type="button" class="btn btn-primary" style="margin-left: 90px;" @click="startEditing(item)">Edit</button>
+          <button type="button" class="btn btn-danger" style="margin-left: 40px;" @click="deleteProduct(item.name)">Delete</button>
+        </template>
+
+        <!-- Ventana emergente de edición específica para cada producto -->
+        <div v-if="editingProduct?.name === item.name" class="edit-modal">
+          <h5>Editando: {{ editingProduct.name }}</h5>
+          <input
+            type="number"
+            v-model="editingProduct.price"
+            placeholder="Nuevo precio"
+          />
+          <div class="buttons">
+            <button class="btn btn-success" @click="saveEdit">Guardar</button>
+            <button class="btn btn-secondary" @click="cancelEdit">Cancelar</button>
           </div>
         </div>
       </div>
     </div>
+  </div>
+</div>
+
   </div>
 </template>
 
@@ -46,7 +54,7 @@ export default {
     this.checkLoginStatus(); // Comprobar estado de sesión
   },
   methods: {
-    
+
     // Método para leer los productos
     readProducts() {
       axios
@@ -78,9 +86,12 @@ export default {
 
     // Método para iniciar la edición de un producto
     startEditing(product) {
-      this.editingProduct = { ...product }; // Clonar los datos del producto en edición
-    },
+      console.log('Iniciando edición para:', product); // Log del producto seleccionado
+      this.editingProduct = { ...product }; // Clona los datos del producto en edición
+    }
+    ,
     saveEdit() {
+      console.log('Guardando edición:', this.editingProduct);
       const { name, price } = this.editingProduct;
 
       if (price == null || price <= 0) {
@@ -91,12 +102,12 @@ export default {
       axios
         .put(`http://localhost:8081/products/${name}`, { price })
         .then(() => {
-          alert('Precio actualizado exitosamente.');
-          this.editingProduct = null; // Cerrar el formulario de edición
-          this.readProducts(); // Actualizar la lista de productos
+          console.log('Edición guardada exitosamente');
+          this.editingProduct = null;
+          this.readProducts();
         })
         .catch((error) => {
-          console.error('Error al actualizar el precio:', error);
+          console.error('Error al guardar edición:', error);
           alert('Error al actualizar el precio. Por favor, inténtalo de nuevo.');
         });
     },

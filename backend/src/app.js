@@ -160,28 +160,35 @@ app.post('/products', async (req, res) => {
 // Endpoint para actualizar el precio de un producto
 // Recibe el nombre del producto y el nuevo precio, y actualiza el precio en la base de datos
 app.put('/products/:name', async (req, res) => {
-    const originalName = req.params.name;   // Nombre original del producto
-    const { price } = req.body;             // Solo se espera el precio como dato
+    const originalName = req.params.name;
+    const { price } = req.body;
+
+    console.log('Solicitud recibida para actualizar producto:');
+    console.log('Nombre:', originalName);
+    console.log('Nuevo precio:', price);
+
+    console.log('Actualizando producto:', originalName, 'Nuevo precio:', price);
 
     if (price == null || typeof price !== 'number' || price <= 0) {
         return res.status(400).json({ success: false, message: 'El precio debe ser un número positivo.' });
     }
 
     try {
-        // Verificar si el producto existe
         const product = await db('products').where({ name: originalName }).first();
         if (!product) {
+            console.log('Producto no encontrado:', originalName);
             return res.status(404).json({ success: false, message: 'Producto no encontrado.' });
         }
 
-        // Actualizar solo el precio
         await db('products').where({ name: originalName }).update({ price });
+        console.log('Precio actualizado correctamente');
         res.status(200).json({ success: true, message: 'Precio actualizado exitosamente.' });
     } catch (error) {
         console.error('Error al actualizar el precio:', error.message);
         res.status(500).json({ success: false, message: 'Error al actualizar el precio.' });
     }
 });
+
 
 // Endpoint para eliminar un producto
 // Recibe el nombre del producto y lo elimina de la base de datos
