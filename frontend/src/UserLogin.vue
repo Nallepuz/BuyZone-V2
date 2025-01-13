@@ -23,8 +23,10 @@
 
 <script>
 export default {
-  name: "UserLogin",
+  name: "UserLogin",  // Nombre del componente
   data() {
+
+    // Devuelve un objeto con las propiedades del componente
     return {
       email: '',
       password: '',
@@ -45,6 +47,7 @@ export default {
 
         const data = await response.json();
 
+        // Comprueba si la respuesta es correcta y si el login ha sido exitoso
         if (response.ok && data.success) {
           // Guarda el token y el email del usuario en localStorage
           localStorage.setItem('userToken', data.token);

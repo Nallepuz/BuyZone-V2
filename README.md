@@ -22,3 +22,12 @@ Version 0.7
 Creada la función de poder añadir un producto nuevo.
 Creada la función para poder editar el precio de los producto ya creados.
 Creada la función para poder eliminar un prodcuto ya creado.
+
+Version 1.0
+
+Se Agrega la función de poder añadir a la lista los productos deseados y poder observar la cuantia total.
+Se agrega la función de poder eliminar los productos de la lista de productos.
+Se agrega la condición de que si el usuario no está logueado, solo podrá acceder al apartado de prodcutos sólamente para visuyalizarlos.
+
+Se oculta la web que se utiliza como base (app.vue).
+Se finaliza el footer general de la web.

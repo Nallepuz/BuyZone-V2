@@ -9,7 +9,7 @@
             <h5 class="card-title">{{ item.name }}</h5>
             <p class="card-text">{{ item.price }} €</p>
             <template v-if="isLoggedIn">
-              <button type="button" class="btn btn-warning">Add to cart</button>
+              <button type="button" class="btn btn-warning" @click="addToCart(item)"> Add to cart </button>
               <button type="button" class="btn btn-primary" style="margin-left: 90px;"
                 @click="startEditing(item)">Edit</button>
               <div class="espacio">
@@ -23,34 +23,6 @@
         </div>
       </div>
     </div>
-
-    
-    <div v-if="editingProduct" class="modal" style="display: block; background-color: rgba(0,0,0,0.5);">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Edit Price</h5>
-        <button type="button" class="btn-close" @click="cancelEdit"></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="editPrice">Price</label>
-          <input
-            id="editPrice"
-            type="number"
-            class="form-control"
-            v-model="editingProduct.price"
-          />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" @click="cancelEdit">Cancel</button>
-        <button type="button" class="btn btn-primary" @click="saveEdit">Save</button>
-      </div>
-    </div>
-  </div>
-</div>
-
   </div>
 </template>
 
@@ -58,23 +30,27 @@
 import axios from 'axios';
 
 export default {
-  name: 'UserProducts',
+  name: 'UserProducts',     // Componente para mostrar los productos
   data() {
+
+    // Inicializar los datos
     return {
       products: [],
+      urlist: [], // Lista de productos añadidos al carrito
       isLoggedIn: false,
       editingProduct: null, // Producto en edición
     };
   },
   mounted() {
-    this.readProducts();
+    this.readProducts();     // Leer los productos
     this.checkLoginStatus(); // Comprobar estado de sesión
   },
   methods: {
-
+    
     // Método para leer los productos
     readProducts() {
-      axios.get('http://localhost:8081/products')
+      axios
+        .get('http://localhost:8081/products')
         .then((response) => {
           this.products = response.data;
         })
@@ -83,13 +59,13 @@ export default {
         });
     },
 
-
     // Método para eliminar un producto
     deleteProduct(productName) {
       if (!confirm(`¿Estás seguro de que deseas eliminar el producto "${productName}"?`)) {
         return;
       }
-      axios.delete(`http://localhost:8081/products/${productName}`)
+      axios
+        .delete(`http://localhost:8081/products/${productName}`)
         .then(() => {
           this.products = this.products.filter((product) => product.name !== productName);
           alert('Producto eliminado exitosamente.');
@@ -100,30 +76,30 @@ export default {
         });
     },
 
-
     // Método para iniciar la edición de un producto
     startEditing(product) {
       this.editingProduct = { ...product }; // Clonar los datos del producto en edición
     },
     saveEdit() {
-  const { name, price } = this.editingProduct;
+      const { name, price } = this.editingProduct;
 
-  if (price == null || price <= 0) {
-    alert('El precio debe ser un número positivo.');
-    return;
-  }
+      if (price == null || price <= 0) {
+        alert('El precio debe ser un número positivo.');
+        return;
+      }
 
-  axios.put(`http://localhost:8081/products/${name}`, { price })
-    .then(() => {
-      alert('Precio actualizado exitosamente.');
-      this.editingProduct = null; // Cerrar el formulario de edición
-      this.readProducts(); // Actualizar la lista de productos
-    })
-    .catch((error) => {
-      console.error('Error al actualizar el precio:', error);
-      alert('Error al actualizar el precio. Por favor, inténtalo de nuevo.');
-    });
-},
+      axios
+        .put(`http://localhost:8081/products/${name}`, { price })
+        .then(() => {
+          alert('Precio actualizado exitosamente.');
+          this.editingProduct = null; // Cerrar el formulario de edición
+          this.readProducts(); // Actualizar la lista de productos
+        })
+        .catch((error) => {
+          console.error('Error al actualizar el precio:', error);
+          alert('Error al actualizar el precio. Por favor, inténtalo de nuevo.');
+        });
+    },
 
     cancelEdit() {
       this.editingProduct = null; // Cancelar la edición
@@ -132,11 +108,28 @@ export default {
       const userToken = localStorage.getItem('userToken');
       this.isLoggedIn = !!userToken; // Si hay un token, está logueado
     },
+
+    // Método para añadir un producto al carrito
+    addToCart(product) {
+      const userId = 1; // Cambia esto si usas otro ID de usuario
+
+      axios
+        .post('http://localhost:8081/cart', {
+          user_id: userId,
+          product_id: product.id, // Asegúrate de que cada producto tenga un ID válido
+        })
+        .then((response) => {
+          console.log('Respuesta del servidor:', response.data);
+          alert('Producto añadido al carrito.');
+        })
+        .catch((error) => {
+          console.error('Error al añadir producto al carrito:', error);
+          alert('Error al añadir producto al carrito.');
+        });
+    }
   },
 };
 </script>
-
-
 
 <style>
 #app {
@@ -164,19 +157,6 @@ export default {
 
 .card-body {
   background-color: #909192;
-}
-
-.logo-desktop {
-  width: 200px;
-  height: auto;
-}
-
-.nav-link {
-  margin-right: 50px;
-}
-
-.element.style {
-  margin-left: 200px;
 }
 
 .espacio {
