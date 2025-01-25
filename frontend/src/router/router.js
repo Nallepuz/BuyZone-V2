@@ -9,6 +9,7 @@ import UserLogin from '../UserLogin.vue'
 import SignUp from '../SignUp.vue'
 import UserConfig from '../UserConfig.vue'
 
+
 const routes = [
 
   //Definimos la página principal de la aplicación
