@@ -24,9 +24,7 @@ const db = knex({
 });
 
 
-
 //CRUD de usuarios
-
 
 // Endpoint para el registro de usuarios (Sign Up)
 // Recibe email y password, y guarda el usuario en la base de datos después de hashear la contraseña
@@ -37,9 +35,7 @@ app.post('/signup', async (req, res) => {
 
     // Validar que se hayan enviado email y password
     if (!email || !password) {
-
         return res.status(400).json({ success: false, message: 'Email y contraseña son obligatorios.' });
-
     }
 
 
@@ -50,16 +46,13 @@ app.post('/signup', async (req, res) => {
         console.log('Usuario registrado exitosamente.');
         res.json({ success: true, message: 'Usuario registrado exitosamente.' });
     } catch (err) {
-
         console.error('Error al registrar el usuario:', err.message);
-
         if (err.code === 'SQLITE_CONSTRAINT') {                                                         // Verifica si el error es por un email duplicado
             return res.status(400).json({ success: false, message: 'El correo ya está en uso.' });
         }
         res.status(500).json({ success: false, message: 'Error en la base de datos.' });
     }
 });
-
 
 // Endpoint para el inicio de sesión de usuarios (Login)
 // Recibe email y password, verifica las credenciales, y genera un token JWT si son válidas
@@ -112,7 +105,6 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ success: false, message: 'Database error' });
     }
 });
-
 
 // Endpoint para actualizar el correo electrónico
 app.put('/update-email', async (req, res) => {
@@ -202,8 +194,6 @@ app.delete('/delete-account', async (req, res) => {
 
 
 
-
-
 //CRUD de productos
 
 // Endpoint para obtener productos
@@ -218,7 +208,6 @@ app.get('/products', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener los productos' });
     }
 });
-
 
 // Endpoint para agregar un producto
 // Recibe imagen, nombre y precio del producto, y lo inserta en la base de datos
@@ -277,39 +266,6 @@ app.put('/products/:id', async (req, res) => {
     }
 });
 
-
-app.put('/products/:name', async (req, res) => {
-    const originalName = req.params.name;
-    const { price } = req.body;
-
-    console.log('Solicitud recibida para actualizar producto:');
-    console.log('Nombre:', originalName);
-    console.log('Nuevo precio:', price);
-
-    console.log('Actualizando producto:', originalName, 'Nuevo precio:', price);
-
-    if (price == null || typeof price !== 'number' || price <= 0) {
-        return res.status(400).json({ success: false, message: 'El precio debe ser un número positivo.' });
-    }
-
-    try {
-        const product = await db('products').where({ name: originalName }).first();
-        if (!product) {
-            console.log('Producto no encontrado:', originalName);
-            return res.status(404).json({ success: false, message: 'Producto no encontrado.' });
-        }
-
-        await db('products').where({ name: originalName }).update({ price });
-        console.log('Precio actualizado correctamente');
-        res.status(200).json({ success: true, message: 'Precio actualizado exitosamente.' });
-    } catch (error) {
-        console.error('Error al actualizar el precio:', error.message);
-        res.status(500).json({ success: false, message: 'Error al actualizar el precio.' });
-    }
-});
-
-
-
 // Endpoint para eliminar un producto
 // Recibe el nombre del producto y lo elimina de la base de datos
 app.delete('/products/:name', async (req, res) => {
@@ -343,45 +299,27 @@ app.delete('/products/:name', async (req, res) => {
 app.get('/cart/:user_id', (req, res) => {
     const { user_id } = req.params;
 
-
     const items = carts[user_id] || [];
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     res.json({ items, total });
 });
 
-
-
 // Endpoint para obtener el carrito de un usuario
 // Devuelve los productos y el total del carrito para un usuario
 app.post('/cart', async (req, res) => {
     const { user_id, product_id } = req.body;
 
-<<<<<<< HEAD
     console.log('Datos recibidos en /cart:', req.body);
 
     // Validar entrada
     if (!user_id || !product_id) {
-=======
-    console.log('Datos recibidos en /cart:', req.body); // Log para confirmar los datos
-
-    // Validar que se hayan enviado user_id y product_id
-    if (!user_id || !product_id) {
-        console.error('Datos inválidos:', req.body);
->>>>>>> 6a4e6b8e0fda8aa3001273618ab6adcf813ad8b4
         return res.status(400).json({ success: false, message: 'Se requieren user_id y product_id.' });
     }
 
     try {
-<<<<<<< HEAD
         const product = await db('products').where({ id: product_id }).first();
         if (!product) {
-=======
-        // Verificar si el producto existe
-        const product = await db('products').where({ id: product_id }).first();
-        if (!product) {
-            console.error('Producto no encontrado:', product_id);
->>>>>>> 6a4e6b8e0fda8aa3001273618ab6adcf813ad8b4
             return res.status(404).json({ success: false, message: 'Producto no encontrado.' });
         }
 
@@ -390,7 +328,6 @@ app.post('/cart', async (req, res) => {
             carts[user_id] = [];
         }
 
-<<<<<<< HEAD
         const existingItem = carts[user_id].find(item => item.id === product_id);
         if (existingItem) {
             // Incrementar la cantidad si el producto ya existe
@@ -408,31 +345,10 @@ app.post('/cart', async (req, res) => {
 });
 
 
-=======
-        console.log('Carrito antes de añadir:', carts[user_id]); // Log para ver el estado inicial del carrito
-
-        // Verificar si el producto ya está en el carrito y aumentar la cantidad en caso afirmativo
-        const cartItem = carts[user_id].find((item) => item.id === product_id);
-        if (cartItem) {
-            cartItem.quantity += 1;
-        } else {
-            carts[user_id].push({ ...product, quantity: 1 });
-        }
-
-        console.log('Carrito después de añadir:', carts[user_id]); // Log para confirmar que se añadió el producto
-        res.status(200).json({ success: true, message: 'Producto añadido al carrito.' });
-    } catch (error) {
-        console.error('Error al añadir al carrito:', error.message);
-        res.status(500).json({ success: false, message: 'Error al añadir al carrito.' });
-    }
-});
-
->>>>>>> 6a4e6b8e0fda8aa3001273618ab6adcf813ad8b4
 // Endpoint para eliminar un producto del carrito
 // Recibe user_id y product_id, y elimina el producto del carrito
 app.delete('/cart/:user_id/item/:item_id', (req, res) => {
     const { user_id, item_id } = req.params;                        // Extraer user_id y item_id de los parámetros
-<<<<<<< HEAD
 
     // Verificar si el usuario tiene un carrito
     if (!carts[user_id]) {
@@ -444,20 +360,6 @@ app.delete('/cart/:user_id/item/:item_id', (req, res) => {
 
     res.status(200).json({ success: true, message: 'Producto eliminado del carrito.' });
 });
-=======
-  
-    // Verificar si el usuario tiene un carrito
-    if (!carts[user_id]) {
-      return res.status(404).json({ success: false, message: 'Carrito no encontrado.' });
-    }
-  
-    // Filtrar el carrito para eliminar el producto
-    carts[user_id] = carts[user_id].filter(item => item.id != item_id);
-  
-    res.status(200).json({ success: true, message: 'Producto eliminado del carrito.' });
-  });
-  
->>>>>>> 6a4e6b8e0fda8aa3001273618ab6adcf813ad8b4
 
 // Endpoint para eliminar un producto del carrito
 // Recibe user_id y product_id, y elimina el producto del carrito
@@ -474,11 +376,8 @@ app.delete('/cart/:user_id/:product_id', (req, res) => {
 
 
 
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 6a4e6b8e0fda8aa3001273618ab6adcf813ad8b4
 // Inicializar el servidor
 app.listen(8081, () => {
     console.log('El servidor ha iniciado en el puerto 8081');
