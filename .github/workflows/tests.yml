@@ -1,20 +1,20 @@
-name: Run Tests and Build Docker Images
+name: Run Backend Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
 
 jobs:
-  test-and-build:
+  test:
     runs-on: ubuntu-latest
 
     services:
       mariadb:
         image: mariadb:latest
         ports:
-          - 3306:3306
+          - 3308:3306
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: buyzone
@@ -22,36 +22,21 @@ jobs:
           --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=5
 
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Configurar Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
 
-      - name: Instalar dependencias
-        run: |
-          cd backend
-          npm install
+    - name: Install dependencies
+      working-directory: ./backend
+      run: npm install
 
-      - name: Lanzar tests unitarios
-        run: |
-          cd backend
-          npm run test:unit
-
-      - name: Lanzar tests de integración
-        run: |
-          cd backend
-          npm run test:integration
-
-      - name: Construir imagen Docker del backend
-        run: |
-          docker build -t buyzone-backend ./backend
-
-      - name: Construir imagen Docker del frontend
-        run: |
-          docker build -t buyzone-frontend ./frontend
+    - name: Run tests
+      working-directory: ./backend
+      run: npm run test
