@@ -119,40 +119,72 @@ export default {
       this.isLoggedIn = !!userToken; // Si hay un token, está logueado
     },
 
+
+
+
+
+
+
+
+
+    
     // Método para añadir un producto al carrito
     addToCart(product) {
-      const userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      console.error('Usuario no identificado');
+      alert('Debes iniciar sesión para añadir productos');
+      return;
+    }
 
-      axios
-        .post('http://localhost:8081/cart', {
-          user_id: userId,
-          product_id: product.id,
-        })
-        .then((response) => {
-          console.log('Producto añadido:', response.data.cart); // Muestra el carrito actualizado
-          alert('Producto añadido al carrito.');
-          this.loadCart(); // Cargar el carrito actualizado
-        })
-        .catch((error) => {
-          console.error('Error al añadir producto al carrito:', error.response?.data || error.message);
-          alert('Error al añadir producto al carrito.');
-        });
-    },
+    axios.post('http://localhost:8081/cart', {
+      user_id: userId,
+      product_id: product.id
+    })
+    .then((response) => {
+      console.log('Respuesta del servidor:', response.data);
+      
+      // Actualización optimizada del carrito
+      if (response.data.success && Array.isArray(response.data.cart)) {
+        this.cart = response.data.cart; // Actualiza directamente con la respuesta
+      } else {
+        this.loadCart(); // Fallback: recarga todo el carrito
+      }
+      
+      alert('Producto añadido correctamente');
+    })
+    .catch((error) => {
+      console.error('Error completo:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
+      const errorMessage = error.response?.data?.message 
+        || 'Error al añadir al carrito. Intenta nuevamente.';
+      alert(errorMessage);
+    });
+  },
 
-    loadCart() {
-      const userId = localStorage.getItem('userId'); // Obtén el ID del usuario logueado
+  loadCart() {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
 
-      axios
-        .get(`http://localhost:8081/cart/${userId}`)
-        .then((response) => {
-          this.cart = response.data; // Actualiza los productos en el carrito
-          console.log('Carrito cargado:', this.cart); // Verifica los datos en la consola
-        })
-        .catch((error) => {
-          console.error('Error al cargar el carrito:', error);
-          alert('Error al cargar el carrito.');
-        });
-    },
+    axios.get(`http://localhost:8081/cart/${userId}`)
+    .then((response) => {
+      if (response.data && Array.isArray(response.data)) {
+        this.cart = response.data;
+      } else {
+        console.warn('Formato de respuesta inesperado:', response.data);
+      }
+    })
+    .catch((error) => {
+      console.error('Error al cargar carrito:', {
+        status: error.response?.status,
+        data: error.response?.data
+      });
+    });
+  },
   },
 };
 </script>

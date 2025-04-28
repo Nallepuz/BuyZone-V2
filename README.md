@@ -31,3 +31,17 @@ Se agrega la condición de que si el usuario no está logueado, solo podrá acce
 
 Se oculta la web que se utiliza como base (app.vue).
 Se finaliza el footer general de la web.
+
+Versión 1.1
+
+Se ha añadido la preparación de un entorno de pruebas automatizado utilizando **Docker Compose** para realizar los tests de integración del proyecto.
+¿Cómo iniciar el entorno de pruebas?
+
+    1. Tener **Docker** y **Docker Compose** instalados.
+    2. Desde la carpeta raíz del proyecto, ejecutar:
+
+         docker compose up -d PARA LEVANTAR EL CONTENEDOR
+
+         docker ps PARA COMPROBAR QUE EL CONTENEDOR ESTÁ EN EJECUCIÓN
+
+         npm run test:unit / npm run test:integration PARA EJECUTAR LOS TESTS

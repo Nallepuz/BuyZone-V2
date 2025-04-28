@@ -42,7 +42,7 @@ export default {
     async handleSignUp() {
       console.log('Datos enviados:', this.email, this.password); // Verifica los valores enviados
       try {
-        const response = await fetch('http://localhost:8081/signup', {
+        const response = await fetch('http://localhost:8081/users/signup', { // ← Agrega '/users'
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

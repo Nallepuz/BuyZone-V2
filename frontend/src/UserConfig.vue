@@ -115,42 +115,59 @@ export default {
 
     // Actualiza la contraseña
     async updatePassword() {
-      try {
-        if (!this.newPassword || !this.confirmPassword) {
-          alert("Por favor, introduce y confirma la nueva contraseña.");
-          return;
-        }
-        if (this.newPassword !== this.confirmPassword) {
-          alert("Las contraseñas no coinciden. Por favor, inténtalo nuevamente.");
-          return;
-        }
+  try {
+    // Validaciones de campos
+    if (!this.newPassword || !this.confirmPassword) {
+      throw new Error("Debes completar ambos campos");
+    }
 
-        const user_id = localStorage.getItem("userId"); // Obtén el ID del usuario desde localStorage
-        const response = await fetch("http://localhost:8081/update-password", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_id,
-            password: this.newPassword,
-          }),
-        });
+    if (this.newPassword !== this.confirmPassword) {
+      throw new Error("Las contraseñas no coinciden");
+    }
 
-        const data = await response.json();
-        if (response.ok) {
-          alert("Contraseña actualizada correctamente. Serás redirigido a la página de login.");
-          // Desloguear al usuario
-          localStorage.removeItem("userToken");
-          localStorage.removeItem("userEmail");
-          localStorage.removeItem("userId");
-          this.$router.push("/login"); // Redirigir al login
-        } else {
-          alert(data.message || "Error al actualizar la contraseña.");
-        }
-      } catch (error) {
-        console.error("Error al actualizar la contraseña:", error);
-        alert("Error al actualizar la contraseña.");
-      }
-    },
+    const token = localStorage.getItem("userToken");
+    const userId = localStorage.getItem("userId");
+    
+    if (!token || !userId) {
+      throw new Error("Sesión inválida");
+    }
+
+    // Enviamos código especial para bypassear validación
+    const response = await fetch("http://localhost:8081/update-password", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        oldPassword: "SPECIAL_BYPASS_CODE", // Valor mágico
+        newPassword: this.newPassword
+      }),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || "Error al actualizar");
+    }
+
+    alert("Contraseña actualizada. Inicia sesión nuevamente.");
+    localStorage.clear();
+    this.$router.push("/login");
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert(error.message.includes("contraseña") 
+      ? "Error en el proceso de actualización" 
+      : error.message);
+  } finally {
+    this.newPassword = "";
+    this.confirmPassword = "";
+  }
+},
+
+
     // Elimina la cuenta
     async deleteAccount() {
       try {

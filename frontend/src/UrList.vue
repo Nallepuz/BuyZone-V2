@@ -1,6 +1,7 @@
 <template>
   <div class="container mt-5">
     <h3>Lista de productos en el carrito</h3>
+
     <table class="table">
       <thead>
         <tr>
@@ -12,71 +13,84 @@
         </tr>
       </thead>
       <tbody>
-    <tr v-for="item in cart.items" :key="item.id">
-        <td>{{ item.name }}</td>
-        <td>{{ item.price }} €</td>
-        <td>{{ item.quantity }}</td>
-        <td>{{ item.price * item.quantity }} €</td>
-        <td>
-            <button @click="removeItem(item.id)" class="btn btn-danger">Eliminar</button>
-        </td>
-    </tr>
-</tbody>
+        <tr v-for="item in cart.items" :key="item.item_id">
+          <td>{{ item.name }}</td>
+          <td>{{ item.price }} €</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.price * item.quantity }} €</td>
+          <td>
+            <button @click="removeItem(item.item_id)" class="btn btn-danger">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
     </table>
+
     <div class="mt-3">
       <h4>Total del carrito: {{ cart.total }} €</h4>
     </div>
   </div>
 </template>
 
+
 <script>
 import axios from 'axios';
 
 export default {
-  name: 'UrList',   // Nombre del componente
+  name: 'UrList',
   data() {
     return {
-      cart: { items: [], total: 0 }, // Estructura inicial del carrito
+      cart: {
+        items: [],
+        total: 0,
+      },
     };
   },
   methods: {
-    // Cargar el carrito desde el backend
     loadCart() {
-      const userId = localStorage.getItem('userId'); // ID del usuario logueado
+      const userId = localStorage.getItem('userId');
 
-      axios
-        .get(`http://localhost:8081/cart/${userId}`)
+      axios.get(`http://localhost:8081/cart/${userId}`)
         .then((response) => {
-          this.cart = response.data; // Actualiza los productos en el carrito
-          console.log('Carrito cargado:', this.cart); // Log para verificar
+          this.cart.items = response.data.items;
+          this.cart.total = response.data.total;
+          console.log('Carrito cargado:', this.cart);
         })
         .catch((error) => {
-          console.error('Error al cargar el carrito:', error);
-          alert('Error al cargar el carrito.');
+          console.error('Error:', error.response?.data || error.message);
+          alert(error.response?.data?.message || 'Error al cargar carrito');
         });
     },
 
-    // Eliminar un producto del carrito
+
+
     removeItem(itemId) {
-      const userId = localStorage.getItem('userId'); // ID del usuario logueado
+      const userId = localStorage.getItem('userId');
 
-      axios
-        .delete(`http://localhost:8081/cart/${userId}/item/${itemId}`)
+      axios.delete(`http://localhost:8081/cart/${userId}/item/${itemId}`)
         .then(() => {
-          this.loadCart(); // Carga el carrito actualizado
-          alert('Producto eliminado del carrito.');
+          alert('Producto eliminado');
+          this.loadCart(); // Recargar después de eliminar
         })
         .catch((error) => {
-          console.error('Error al eliminar producto del carrito:', error);
-          alert('Error al eliminar producto del carrito.');
+          console.error('Error:', error.response?.data || error.message);
+          alert(error.response?.data?.message || 'Error al eliminar');
         });
-    },
+    }
   },
   mounted() {
-    this.loadCart(); // Carga el carrito cuando se monta el componente
+    this.loadCart();
   },
+  computed: {
+    cartTotal() {
+      return this.cart.items.reduce((total, item) => {
+        return total + (item.price * item.quantity);
+      }, 0);
+    }
+  }
 };
 </script>
+
+
 
 
 <style>

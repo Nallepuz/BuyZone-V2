@@ -23,52 +23,87 @@
 
 <script>
 export default {
-  name: "UserLogin",  // Nombre del componente
+  name: "UserLogin",
   data() {
-
-    // Devuelve un objeto con las propiedades del componente
     return {
       email: '',
       password: '',
-      errorMessage: '', // Para almacenar el mensaje de error
+      errorMessage: '',
+      isLoading: false
     };
   },
   methods: {
-    async handleLogin() {
+    // Método para extraer el ID del token JWT
+    extractUserIdFromToken(token) {
       try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.id;
+      } catch (e) {
+        console.error('Error extrayendo ID del token:', e);
+        return null;
+      }
+    },
+
+    async handleLogin() {
+      this.isLoading = true;
+      this.errorMessage = '';
+      
+      try {
+        // Validación básica
+        if (!this.email.trim()) {
+          throw new Error('Por favor ingrese su email');
+        }
+
+        if (!this.password) {
+          throw new Error('Por favor ingrese su contraseña');
+        }
+
         const response = await fetch('http://localhost:8081/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            email: this.email,
-            password: this.password,
+            email: this.email.trim(),
+            password: this.password
           }),
         });
 
-        const data = await response.json();
-
-        // Comprueba si la respuesta es correcta y si el login ha sido exitoso
-        if (response.ok && data.success) {
-          // Guarda el token, el user_id y el email del usuario en localStorage
-          localStorage.setItem('userToken', data.token);
-          localStorage.setItem('userEmail', data.user.email); // Guarda el email
-          localStorage.setItem('userId', data.user.id); // Guarda el user_id
-
-          // Actualiza el estado global
-          this.$root.isLoggedIn = true;
-          this.$root.userEmail = data.user.email; // Asigna el email al estado global
-
-          // Redirige al usuario
-          this.$router.push('/products');
-        } else {
-          this.errorMessage = data.message || 'Error during login';
+        if (!response.ok) {
+          throw new Error('Credenciales incorrectas');
         }
+
+        const data = await response.json();
+        console.log('Datos de login:', data);
+
+        // Obtener token y user ID de diferentes formas posibles
+        const token = data.token || data.accessToken;
+        if (!token) throw new Error('No se recibió token de autenticación');
+
+        // Extraer userId (de la respuesta o del token)
+        const userId = data.user?.id || this.extractUserIdFromToken(token);
+        if (!userId) throw new Error('No se pudo obtener el ID de usuario');
+
+        const userEmail = data.user?.email || data.email || this.email.trim();
+
+        // Guardar en localStorage
+        localStorage.setItem('userToken', token);
+        localStorage.setItem('userId', userId);
+        localStorage.setItem('userEmail', userEmail);
+
+        // Actualizar estado global
+        this.$root.isLoggedIn = true;
+        this.$root.userEmail = userEmail;
+        
+        // Redirigir
+        this.$router.push('/products');
+
       } catch (error) {
-        console.error('Login Error:', error);
-        this.errorMessage = 'Unable to connect to the server';
+        console.error('Error en login:', error);
+        this.errorMessage = error.message || 'Error durante el inicio de sesión';
+      } finally {
+        this.isLoading = false;
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
