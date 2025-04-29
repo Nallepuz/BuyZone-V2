@@ -12,7 +12,7 @@ describe('Product Controller Testeo Unitario', () => {
     // Simulamos que el servicio devuelve una lista de productos
     productService.getAll.mockResolvedValue([{ id: 1, name: 'Producto 1', price: 100, image: 'image1.jpg' }]);
 
-    const req = {}; // No necesitamos parámetros para obtener todos los productos
+    const req = {}; 
     const res = {
       json: jest.fn(),
     };

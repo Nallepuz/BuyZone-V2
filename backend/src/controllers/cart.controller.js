@@ -5,7 +5,7 @@ const getCart = async (req, res) => {
   const { user_id } = req.params;
   try {
     const cart = await cartService.getCart(user_id); // Aseguramos que es asincrónico
-    res.json(cart); // ✅ DEVUELVE SOLO EL CARRITO
+    res.json(cart); 
   } catch (error) {
     res.status(404).json({ error: error.message });
   }

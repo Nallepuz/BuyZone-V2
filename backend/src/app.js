@@ -22,7 +22,6 @@ app.use(cors({
 app.use(express.json());
 
 app.use((req, res, next) => {
-  /*console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`); // Log de todas las peticiones*/
   next();
 });
 

@@ -3,7 +3,6 @@ const router = express.Router();
 const userController = require('../controllers/user.controller');
 
 // RUTA PARA REGISTRO
-/*router.post('/signup', userController.signup);*/
 router.post('/users/signup', userController.signup);
 // RUTA PARA LOGIN
 router.post('/login', userController.login);
