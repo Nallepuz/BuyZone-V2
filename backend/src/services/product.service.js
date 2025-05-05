@@ -5,15 +5,15 @@ exports.getAll = async () => {
     return await db('products').select('*');
   } catch (error) {
     console.error('Error en product.service.getAll:', error);
-    throw error; // Propaga el error para que el controller lo maneje
+    throw error; 
   }
 };
 
 exports.create = async ({ name, price, image }) => {
-  if (!name || !image || price == null || price <= 0) {
+  if (!name) {
     return {
       status: 400,
-      body: { success: false, message: 'Todos los campos (imageUrl, name, price) son obligatorios y válidos.' }
+      body: { success: false, message: 'El nombre del producto es obligatorio.' }
     };
   }
 
@@ -34,7 +34,6 @@ exports.create = async ({ name, price, image }) => {
 
 exports.update = async (id, data) => {
   try {
-      // 1. Verificar si el producto existe
       const product = await db('products').where({ id }).first();
       if (!product) {
           return {
@@ -42,8 +41,6 @@ exports.update = async (id, data) => {
               body: { success: false, message: 'Producto no encontrado.' }
           };
       }
-
-      // 2. Validar datos (ej: precio positivo)
       if (data.price && data.price <= 0) {
           return {
               status: 400,

@@ -15,8 +15,8 @@ app.use(cors({
   origin: 'http://localhost:8080',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'], // <-- Añade Authorization
-  exposedHeaders: ['Authorization'] // <-- Permite que el frontend lea el header
+  allowedHeaders: ['Content-Type', 'Authorization'], 
+  exposedHeaders: ['Authorization'] 
 }));
 
 app.use(express.json());

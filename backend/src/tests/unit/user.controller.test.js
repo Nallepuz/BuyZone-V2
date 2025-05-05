@@ -88,7 +88,7 @@ describe('User Controller Testeo Unitario', () => {
         await userController.updateEmail(req, res);
 
         // Verifica que el servicio de updateEmail fue llamado correctamente
-        expect(userService.updateEmail).toHaveBeenCalledWith(1, 'new-email@example.com'); // Asegúrate de pasar correctamente el user_id y email
+        expect(userService.updateEmail).toHaveBeenCalledWith(1, 'new-email@example.com'); 
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
             success: true,

@@ -4,7 +4,7 @@ const cartService = require('../services/cart.service');
 const getCart = async (req, res) => {
   const { user_id } = req.params;
   try {
-    const cart = await cartService.getCart(user_id); // Aseguramos que es asincrónico
+    const cart = await cartService.getCart(user_id); 
     res.json(cart); 
   } catch (error) {
     res.status(404).json({ error: error.message });
@@ -31,13 +31,13 @@ const addToCart = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: 'Producto agregado al carrito',
-      cart: result.cart, // Aquí estamos enviando el carrito actualizado
+      cart: result.cart, 
     });
   } catch (error) {
-    console.error('Error en addToCart:', error.message);  // Log del error
+    console.error('Error en addToCart:', error.message); 
     return res.status(500).json({
       success: false,
-      message: error.message,  // Enviar el mensaje de error
+      message: error.message,  
     });
   }
 };
@@ -50,7 +50,7 @@ const deleteCartItemByItemId = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Producto eliminado del carrito.',
-      cart: result.cart, // Asegúrate de enviar el carrito actualizado en la respuesta
+      cart: result.cart, 
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

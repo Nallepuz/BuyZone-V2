@@ -26,17 +26,17 @@ const login = async (req, res) => {
     }
 
     try {
-        const result = await userService.loginUser(email, password); // Esto llama a tu servicio de login
+        const result = await userService.loginUser(email, password);
 
         if (!result) {
-            console.error('Credenciales inválidas para el usuario:', email); // Log para ver que no se encuentra el usuario
-            return res.status(401).json({ success: false, message: 'Credenciales inválidas' }); // Error de credenciales
+            console.error('Credenciales inválidas para el usuario:', email);
+            return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
         }
 
         res.status(200).json({
             success: true,
-            token: result.token  // Asegúrate de que `result` tiene el token
-        });  // Responde con status 200 en caso de éxito
+            token: result.token 
+        });  
 
     } catch (err) {
         console.error('Error en login:', err.message);
@@ -92,7 +92,7 @@ const deleteAccount = async (req, res) => {
     try {
         const result = await userService.deleteAccount(user_id);
         if (!result) return res.status(404).json({ message: "Usuario no encontrado." });
-        res.status(200).json({ success: true, message: "Cuenta eliminada exitosamente." });  // Asegurarse de que el status es 200 aquí
+        res.status(200).json({ success: true, message: "Cuenta eliminada exitosamente." }); 
     } catch (err) {
         console.error("Error al eliminar la cuenta:", err.message);
         res.status(500).json({ message: "Error interno del servidor." });
@@ -106,5 +106,4 @@ module.exports = {
     updateEmail,
     updatePassword,
     deleteAccount,
-    // y los anteriores: signup, login
 };

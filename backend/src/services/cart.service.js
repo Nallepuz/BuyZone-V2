@@ -84,4 +84,5 @@ module.exports = {
     addToCart,
     deleteItem,
     deleteItemByProductId,
+    carts
 };

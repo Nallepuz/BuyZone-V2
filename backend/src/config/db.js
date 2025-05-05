@@ -1,6 +1,5 @@
 const knex = require('knex');
-require('dotenv').config(); // ← Carga las variables desde .env
-
+require('dotenv').config();
 const db = knex({
   client: 'mysql2',
   connection: {

@@ -13,6 +13,9 @@ RUN npm install
 # Copia todo el resto del código
 COPY . .
 
+# Establece la variable de entorno
+ENV NODE_ENV=development
+
 # Expone el puerto 8081
 EXPOSE 8081
 

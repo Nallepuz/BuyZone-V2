@@ -29,7 +29,7 @@ const loginUser = async (email, password) => {
     {
       id: user.id,
       email: user.email,
-      pwdHash: user.password.substring(0, 15) // Parte del hash almacenado
+      pwdHash: user.password.substring(0, 15)
     },
     'secreto',
     { expiresIn: '1h' }

@@ -18,13 +18,14 @@ afterAll(async () => {
 
 // TEST SIGNUP Exitoso
 describe('POST /users signup', () => {
+   
     const testUser = {
         email: `test${Date.now()}@example.com`,
         password: 'TestPass123!'
     };
 
     beforeAll(async () => {
-        await db.raw('SELECT 1'); // Test de conexión
+        await db.raw('SELECT 1'); 
     });
 
     afterAll(async () => {
@@ -33,7 +34,7 @@ describe('POST /users signup', () => {
 
     it('debería registrar al usuario correctamente', async () => {
         const response = await request(app)
-            .post('/users/signup') // Ahora coincide con la ruta registrada
+            .post('/users/signup') 
             .send(testUser)
             .expect(201);
 
@@ -43,8 +44,9 @@ describe('POST /users signup', () => {
 });
 // TEST SIGNUP Fallido
 describe('POST /users signup', () => {
+    
     it('debería fallar cuando el email ya está registrado', async () => {
-        // 1. Primero creamos un usuario exitosamente
+        // crear usuario exitosamente
         const existingUser = {
             email: `existing_${Date.now()}@example.com`,
             password: 'ExistingPass123!'
@@ -55,19 +57,18 @@ describe('POST /users signup', () => {
             .send(existingUser)
             .expect(201);
 
-        // 2. Intentamos registrar el mismo usuario otra vez
+        // registrar el mismo usuario otra vez
         const response = await request(app)
             .post('/users/signup')
             .send(existingUser) // Mismos datos
             .expect(400); // Esperamos error 400
 
-        // 3. Verificamos la respuesta de error
+        // Verificar la respuesta de error
         expect(response.body).toEqual({
             success: false,
             message: 'El correo ya está en uso.'
         });
 
-        // 4. Limpieza
         await db('users').where({ email: existingUser.email }).del();
     });
 });
@@ -75,27 +76,28 @@ describe('POST /users signup', () => {
 
 // TEST LOGIN Exitoso
 describe('POST /users login', () => {
-    // Usuario de prueba (los mismos datos que usaste en signup)
+    
+    // Usuario de prueba
     const testUser = {
         email: `test_${Date.now()}@example.com`,
         password: 'SecurePass123!'
     };
 
     beforeAll(async () => {
-        // 1. Registrar un usuario para poder hacer login después
+        // Registrar un usuario para login
         await request(app)
             .post('/users/signup')
             .send(testUser);
     });
 
     afterAll(async () => {
-        // 3. Limpieza: eliminar el usuario de prueba
+        //Limpieza
         await db('users').where({ email: testUser.email }).del();
     });
 
     it('debería iniciar sesión y devolver un token correctamente', async () => {
         const response = await request(app)
-            .post('/login') // Cambiado a /login en lugar de /users/login
+            .post('/login')
             .send({
                 email: testUser.email,
                 password: testUser.password
@@ -110,21 +112,20 @@ describe('POST /users login', () => {
 });
 // TEST LOGIN Fallido
 describe('POST /users login', () => {
-    // Usuario de prueba (mismos datos que en el exitoso)
     const testUser = {
         email: `test_${Date.now()}@example.com`,
         password: 'SecurePass123!'
     };
 
     beforeAll(async () => {
-        // 1. Registrar un usuario válido primero
+        // Registrar un usurio válido primero
         await request(app)
             .post('/users/signup')
             .send(testUser);
     });
 
     afterAll(async () => {
-        // 3. Limpieza: eliminar el usuario de prueba
+        // Limpieza
         await db('users').where({ email: testUser.email }).del();
     });
 
@@ -135,11 +136,11 @@ describe('POST /users login', () => {
                 email: testUser.email,
                 password: 'PASSWORD_INCORRECTO' // Password equivocado
             })
-            .expect(401); // Unauthorized
+            .expect(401);
 
         expect(response.body).toEqual({
             success: false,
-            message: 'Credenciales inválidas' // Ajusta según tu mensaje
+            message: 'Credenciales inválidas'
         });
     });
 });
@@ -172,8 +173,8 @@ describe('PUT /update email', () => {
             .put('/update-email')
             .set('Authorization', `Bearer ${authToken}`)
             .send({
-                user_id: userId, // Exactamente como lo espera el controlador
-                email: newEmail  // Campo llamado "email" (no newEmail)
+                user_id: userId,
+                email: newEmail 
             })
             .expect(200)
             .then(res => {
@@ -183,7 +184,7 @@ describe('PUT /update email', () => {
                 });
             });
 
-        // Verificación directa en DB
+        // Verificación
         const updatedUser = await db('users').where({ id: userId }).first();
         expect(updatedUser.email).toBe(newEmail);
     });
@@ -217,7 +218,7 @@ describe('PUT /update email', () => {
             .put('/update-email')
             .set('Authorization', `Bearer ${authToken}`)
             .send({
-                user_id: 999999, // ID inexistente
+                user_id: 999999, 
                 email: 'nuevo@email.com'
             })
             .expect(404)
@@ -243,14 +244,14 @@ describe('PUT /update password', () => {
     let authToken;
 
     beforeAll(async () => {
-        // 1. Registrar usuario
+        // Registrar usuario
         const signupRes = await request(app).post('/users/signup').send(testUser);
 
         // Obtener ID del usuario
         const user = await db('users').where({ email: testUser.email }).first();
         userId = user.id;
 
-        // 2. Login para obtener token
+        // Login para obtener token
         const loginRes = await request(app)
             .post('/login')
             .send({ email: testUser.email, password: testUser.password });
@@ -260,7 +261,7 @@ describe('PUT /update password', () => {
     it('debería actualizar la contraseña con éxito', async () => {
         const newPassword = 'newSecurePassword456!';
 
-        // 1. Actualizar contraseña
+        // Actualizar contraseña
         const updateRes = await request(app)
             .put('/update-password')
             .set('Authorization', `Bearer ${authToken}`)
@@ -271,13 +272,13 @@ describe('PUT /update password', () => {
             })
             .expect(200);
 
-        // 2. Verificar respuesta
+        // Verificar respuesta
         expect(updateRes.body).toEqual({
             success: true,
             message: expect.stringContaining('actualizada')
         });
 
-        // 3. Verificación directa en la DB (sin depender del login)
+        // Verificación directa en la DB 
         const updatedUser = await db('users').where({ id: userId }).first();
         const isPasswordUpdated = await bcrypt.compare(newPassword, updatedUser.password);
         expect(isPasswordUpdated).toBe(true);
@@ -297,12 +298,12 @@ describe('PUT /update password', () => {
     let authToken;
 
     beforeAll(async () => {
-        // 1. Registrar usuario
+        // Registrar usuario
         await request(app).post('/users/signup').send(testUser);
         const user = await db('users').where({ email: testUser.email }).first();
         userId = user.id;
 
-        // 2. Obtener token
+        // Obtener token
         const loginRes = await request(app)
             .post('/login')
             .send({ email: testUser.email, password: testUser.password });
@@ -315,14 +316,14 @@ describe('PUT /update password', () => {
             .set('Authorization', `Bearer ${authToken}`)
             .send({
                 user_id: userId,
-                oldPassword: 'oldPassword123!', // Contraseña incorrecta
+                oldPassword: 'oldPassword123!',
                 newPassword: 'newPassword456!'
             })
-            .expect(401);  // Asegúrate de que se espera el código 401 en caso de error
+            .expect(401);  
 
         expect(response.body).toEqual({
             success: false,
-            message: 'Contraseña actual incorrecta'  // Asegúrate de que este mensaje coincide con el esperado
+            message: 'Contraseña actual incorrecta'
         });
     });
 
@@ -344,7 +345,7 @@ describe('DELETE /delete account', () => {
     let authToken;
 
     beforeAll(async () => {
-        // Registrar usuario de prueba
+        // Registrar usuario
         const signupRes = await request(app)
             .post('/users/signup')
             .send(testUser);
@@ -388,7 +389,6 @@ describe('DELETE /delete account', () => {
             .send({ user_id: nonExistentUserId })
             .expect(404);
 
-        // Versión ajustada (solo verifica el mensaje)
         expect(response.body).toEqual({
             message: "Usuario no encontrado."
         });

@@ -13,11 +13,19 @@ exports.getAllProducts = async (req, res) => {
 // Crear un nuevo producto
 exports.createProduct = async (req, res) => {
   const { name, price, image } = req.body;
+
   try {
+    // Ejecutar la lógica principal
     const result = await productService.create({ name, price, image });
-    res.status(result.status).json(result.body);
+    return res.status(result.status).json(result.body);
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error al agregar el producto.' });
+    
+    // Captura y log de cualquier error inesperado
+    console.error('[CONTROLLER] Error al crear producto:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno al procesar el producto'
+    });
   }
 };
 

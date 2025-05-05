@@ -2,8 +2,11 @@ const request = require('supertest');
 const app = require('../../app');
 const db = require('../../config/db');
 
+beforeAll(async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => { });
+  });
 
-// Test GET /products
+// Test GET
 describe('GET /products', () => {
     it('debería devolver todos los productos correctamente', async () => {
         const response = await request(app)
@@ -19,21 +22,19 @@ describe('GET /products', () => {
         expect(response.body[0]).toHaveProperty('image');
     });
 });
-
-
-// Test POST /products Exitoso
+// Test POST Exitoso
 describe('POST /products', () => {
-    // 1. Nombre único con timestamp + random
+    // Nombre único con timestamp + random
     const testProductName = `TEST_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-    // 2. Limpieza SÍNCRONA 
+    // Limpieza SÍNCRONA 
     afterAll(async () => {
         await db('products').where({ name: testProductName }).del();
         await db.destroy(); // Cierra la conexión
     }, 10000); // Aumenta timeout si es necesario
 
     it('crea el producto correctamente', async () => {
-        // 3. Crear producto
+        // Crear producto
         const res = await request(app)
             .post('/products')
             .send({
@@ -49,37 +50,50 @@ describe('POST /products', () => {
             .first();
     });
 });
-// Test POST /products Fallido
+// Test POST Fallido
 describe('POST /products', () => {
-    it('debería fallar si faltan campos obligatorios', async () => {
-        // Enviar un producto SIN "price" (campo obligatorio)
+    const testProductName = `TEST_DUPLICATE_${Date.now()}`;
+    const testProductPrice = 50.00;
+    const testProductImage = 'https://test.com/duplicate.jpg';
+    let dbConnection; // Guardaremos la conexión
+    beforeAll(async () => {
+        dbConnection = await db.initialize();
+        // Crear un producto inicial para la prueba de duplicado
+        await db('products').insert({
+            name: testProductName,
+            price: testProductPrice,
+            image: testProductImage
+        });
+    });
+    afterAll(async () => {
+        // Limpiar la base de datos
+        await db('products').where({ name: testProductName }).del();
+        await db.destroy(); // Cerrar conexión
+    });
+    it('debería fallar al crear un producto sin nombre', async () => {
         const response = await request(app)
             .post('/products')
             .send({
-                name: 'Producto Test',
-                image: 'https://test.com/img.jpg'
-                // Falta "price"
+                price: testProductPrice,
+                image: testProductImage
             })
-            .expect(400); // Status de error
+            .expect(400); 
 
-        // Verificar el mensaje de error
         expect(response.body).toEqual({
             success: false,
-            message: 'Todos los campos (imageUrl, name, price) son obligatorios y válidos.'
+            message: 'El nombre del producto es obligatorio.'
         });
-    });
+    }
+    );
 });
-
-// Test PUT /products Exitoso
+// Test PUT Exitoso
 describe('PUT /products', () => {
     let testProductId;
     let dbConnection; // Guardaremos la conexión
 
     beforeAll(async () => {
-        // 1. Crear conexión persistente
         dbConnection = await db.initialize();
 
-        // 2. Insertar producto de prueba
         [testProductId] = await db('products').insert({
             name: 'Producto Original',
             price: 50.00,
@@ -88,7 +102,6 @@ describe('PUT /products', () => {
     });
 
     afterAll(async () => {
-        // 3. Limpieza y cierre en orden
         await db('products').where({ id: testProductId }).del();
         await db.destroy();
     });
@@ -110,7 +123,6 @@ describe('PUT /products', () => {
             message: 'Producto actualizado exitosamente.'
         });
 
-        // Verificación en DB
         const product = await db('products')
             .where({ id: testProductId })
             .first();
@@ -118,7 +130,7 @@ describe('PUT /products', () => {
         expect(product.name).toBe(updatedData.name);
     });
 });
-// Test PUT /products Fallido
+// Test PUT Fallido
 describe('PUT /products', () => {
     let testProductId;
     let knexConnection; // Para manejar la conexión manualmente
@@ -155,18 +167,13 @@ describe('PUT /products', () => {
         });
     });
 });
-
-
-
-// Test DELETE /products Exitoso
+// Test DELETE Exitoso
 describe('DELETE /products', () => {
     let testProductName;
 
     beforeAll(async () => {
-        // 1. Asegurar conexión activa
-        await db.initialize(); // ← Esta línea es clave
+        await db.initialize(); 
 
-        // 2. Crear producto de prueba
         testProductName = `TEST_DELETE_${Date.now()}`;
         await db('products').insert({
             name: testProductName,
@@ -176,7 +183,6 @@ describe('DELETE /products', () => {
     });
 
     afterAll(async () => {
-        // 3. Limpieza (no cerrar conexión aquí)
         await db('products').where({ name: testProductName }).del();
     });
 
@@ -186,10 +192,10 @@ describe('DELETE /products', () => {
             .expect(200);
     });
 });
-// Test DELETE /products Fallido
+// Test DELETE Fallido
 describe('DELETE /products', () => {
     beforeAll(async () => {
-        // Asegurar conexión (igual que en el exitoso)
+        
         await db.initialize();
     });
 
@@ -198,12 +204,12 @@ describe('DELETE /products', () => {
 
         const response = await request(app)
             .delete(`/products/${nonExistentName}`)
-            .expect(404); // ← Esperamos código 404 (No encontrado)
+            .expect(404); 
 
-        // Verificar el mensaje de error
+        
         expect(response.body).toEqual({
             success: false,
-            message: 'Producto no encontrado.' // ← Asegúrate que coincide con tu servicio
+            message: 'Producto no encontrado.' 
         });
     });
 });

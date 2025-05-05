@@ -1,26 +1,38 @@
 const cartService = require('../../services/cart.service');
 const request = require('supertest');
-const app = require('../../app');  // Asegúrate de que esté apuntando a tu app.js correctamente
+const app = require('../../app'); 
 const db = require('../../config/db');
+
+beforeAll(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => { });
+});
 
 // Test Exitoso para obtener el carrito de un usuario
 describe('GET /cart', () => {
+
+    beforeAll(async () => {
+        try {
+            await db.raw('SELECT 1');
+        } catch (error) {
+            throw new Error('Base de datos no disponible. Test fallido forzado.');
+        }
+    });
+
     it('debería devolver el carrito de un usuario correctamente', async () => {
-        const userId = 1;  // Suponemos que este ID existe en la base de datos.
+        const userId = 1; 
 
         const response = await request(app)
-            .get(`/cart/${userId}`)  // La ruta debe ser la correcta según tu backend
+            .get(`/cart/${userId}`) 
             .send();
 
-        expect(response.status).toBe(200);  // Verifica que la respuesta sea 200 OK
+        expect(response.status).toBe(200); 
         expect(response.body.items).toBeDefined();
         expect(Array.isArray(response.body.items)).toBe(true);
         expect(response.body.total).toBeDefined();
 
     });
 });
-
-// Test Exitoso para agregar un producto al carrito
+// Test Exitoso para agregar un producto al carrito Exitoso
 describe('POST /cart', () => {
     it('debería agregar un producto al carrito correctamente', async () => {
         // Datos de prueba para el carrito en memoria
@@ -34,7 +46,7 @@ describe('POST /cart', () => {
             .post('/cart')
             .send(payload);
 
-        // Verificaciones para carrito en memoria
+        // Verificacion para carrito
         expect(response.status).toBe(200);
         expect(response.body).toEqual({
             success: true,
@@ -43,128 +55,181 @@ describe('POST /cart', () => {
         });
     });
 });
-// Test Fallido para agregar un producto al carrito
+// Test Fallido para agregar un producto al carrito Fallido
 describe('POST /cart', () => {
+    beforeAll(async () => {
+        try {
+            await db.raw('SELECT 1');
+        } catch (error) {
+            throw new Error('Base de datos no disponible. Test fallido forzado.');
+        }
+    });
     it('debería devolver un error si faltan los parámetros user_id o product_id', async () => {
         const response = await request(app)
             .post('/cart')
-            .send({});  // No enviamos los parámetros
+            .send({}); 
 
-        expect(response.status).toBe(400);  // El status debe ser 400 Bad Request
+        expect(response.status).toBe(400);
         expect(response.body.success).toBe(false);
-        expect(response.body.message).toBe('Se requieren user_id y product_id');  // El mensaje debe ser adecuado
+        expect(response.body.message).toBe('Se requieren user_id y product_id'); 
     });
 });
+// Test para eliminar un producto del carrito por item_id Exitoso
+describe('DELETE /cart/:user_id/item/:item_id', () => {
+    const userId = 1;
+    const itemId = 9999; // ID único para este test
 
-// Test para eliminar un producto del carrito por item_id (ÉXITO y FALLO)
-describe('DELETE /cart (ITEM_ID)', () => {
+    beforeAll(async () => {
+        try {
+            await db.raw('SELECT 1');
+        } catch (error) {
+            throw new Error('Base de datos no disponible. Test fallido forzado.');
+        }
+    });
+
+    beforeEach(() => {
+        if (!cartService.carts) cartService.carts = {};
+
+        cartService.carts[userId] = [{
+            item_id: itemId,
+            product_id: 2,
+            name: "Producto Test",
+            price: 20,
+            quantity: 1
+        }];
+    });
+
+    afterEach(() => {
+        
+        cartService.carts[userId] = [];
+    });
+
     it('debería eliminar un producto del carrito por item_id correctamente', async () => {
-        // 1. Mock del servicio
-        const mockCart = {
-            1: [{
-                item_id: 123,  // Asegurar que existe
-                product_id: 2,
-                name: "Producto Test",
-                price: 20,
-                quantity: 1
-            }]
-        };
-        require('../../services/cart.service').carts = mockCart;
-
-        // 2. Mockear deleteItem para devolver éxito
-        jest.spyOn(require('../../services/cart.service'), 'deleteItem')
-            .mockResolvedValue({
-                success: true,
-                message: 'Producto eliminado del carrito',
-                cart: { items: [], total: 0 }
-            });
-
-        // 3. Ejecutar
         const response = await request(app)
-            .delete('/cart/1/item/123')
+            .delete(`/cart/${userId}/item/${itemId}`)
             .send();
 
-        // 4. Verificar
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
+
+       
+        const item = cartService.carts[userId].find(i => i.item_id === itemId);
+        expect(item).toBeUndefined();
+    });
+});
+// Test para eliminar un producto del carrito por item_id Fallido
+describe('DELETE /cart/:user_id/item/:item_id (item inexistente)', () => {
+    const userId = 1;
+    const itemIdInexistente = 9999;
+
+    beforeAll(async () => {
+        try {
+            await db.raw('SELECT 1');
+        } catch (error) {
+            throw new Error('Base de datos no disponible. Test fallido forzado.');
+        }
+    });
+
+    beforeEach(() => {
+        if (!cartService.carts) cartService.carts = {};
+        cartService.carts[userId] = [
+            {
+                item_id: 1111,
+                product_id: 3,
+                name: "Otro producto",
+                price: 15,
+                quantity: 1
+            }
+        ];
+    });
+
+    afterEach(() => {
+        cartService.carts[userId] = [];
     });
 
     it('debería devolver un error si el item_id no existe en el carrito', async () => {
-        // 1. Configurar mock para simular error
-        jest.spyOn(require('../../services/cart.service'), 'deleteItem')
-            .mockRejectedValue(new Error('Producto no encontrado en el carrito'));
-
-        // 2. Ejecutar DELETE con item_id inexistente
         const response = await request(app)
-            .delete('/cart/1/item/999') // item_id que no existe
+            .delete(`/cart/${userId}/item/${itemIdInexistente}`)
             .send();
 
-        // 3. Verificar
-        expect(response.status).toBe(500); // Debe ser 500 (error)
+        expect(response.status).toBe(500);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe('Producto no encontrado en el carrito');
     });
 });
+// Test para eliminar un producto del carrito por product_id Exitoso
+describe('DELETE /cart/:user_id/product/:product_id', () => {
+    const userId = 1;
+    const productId = 2;
 
-// Test para eliminar un producto del carrito por product_id (ÉXITO y FALLO)
-describe('DELETE /cart (PRODUCT_ID)', () => {
-    // Test exitoso
-    it('debería eliminar un producto del carrito por product_id correctamente', async () => {
-        // 1. Configuración manual EXTRA-SEGURA
-        const cartService = require('../../services/cart.service');
-        cartService.carts = {
-            1: [{
-                item_id: 1,
-                product_id: 2, // ID a eliminar
-                name: "Producto Forzado",
-                price: 20,
-                quantity: 1
-            }]
-        };
-
-        // 2. Mock completo del método
-        const originalMethod = cartService.deleteItemByProductId;
-        cartService.deleteItemByProductId = async (user_id, product_id) => ({
-            success: true,
-            message: 'Producto eliminado (mock forzado)',
-            cart: { items: [], total: 0 }
-        });
-
-        // 3. Ejecutar
-        const response = await request(app)
-            .delete('/cart/1/product/2')
-            .send();
-
-        // 4. Restaurar método original
-        cartService.deleteItemByProductId = originalMethod;
-
-        // 5. Verificaciones
-        expect(response.status).toBe(200);
-        expect(response.body.success).toBe(true);
+    beforeAll(async () => {
+        try {
+            await db.raw('SELECT 1');
+        } catch (error) {
+            throw new Error('Base de datos no disponible. Test fallido forzado.');
+        }
     });
 
-    // Test fallido
+    beforeEach(() => {
+        // Insertamos un producto en el carrito en memoria
+        if (!cartService.carts) cartService.carts = {};
+
+        cartService.carts[userId] = [{
+            item_id: 1234,
+            product_id: productId,
+            name: "Producto Forzado",
+            price: 20,
+            quantity: 1
+        }];
+    });
+
+    afterEach(() => {
+        // Limpiamos el carrito tras el test
+        cartService.carts[userId] = [];
+    });
+
+    it('debería eliminar un producto del carrito por product_id correctamente', async () => {
+        const response = await request(app)
+            .delete(`/cart/${userId}/product/${productId}`)
+            .send();
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+
+        // Verificamos que el producto ya no está
+        const producto = cartService.carts[userId].find(i => i.product_id === productId);
+        expect(producto).toBeUndefined();
+    });
+});
+// Test para eliminar un producto del carrito por product_id Fallido
+describe('DELETE /cart (PRODUCT_ID)', () => {
+    beforeAll(async () => {
+        try {
+            await db.raw('SELECT 1');
+        } catch (error) {
+            throw new Error('Base de datos no disponible. Test fallido forzado.');
+        }
+    });
+    
     it('debería devolver error si el product_id no existe en el carrito', async () => {
-        // 1. Configurar mock manual del carrito
+        
         const testCart = {
-            1: [{  // user_id: 1
+            1: [{ 
                 item_id: 1,
-                product_id: 99, // ¡No es 999!
+                product_id: 99, 
                 name: "Producto Test",
                 price: 20,
                 quantity: 1
             }]
         };
 
-        // 2. Inyectar datos directamente
         cartService.carts = testCart;
 
-        // 3. Ejecutar DELETE con product_id inexistente (999)
         const response = await request(app)
             .delete('/cart/1/product/999')
             .send();
 
-        // 4. Verificaciones
+       
         expect(response.status).toBe(500);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toMatch(/no encontrado/); // Mensaje flexible
